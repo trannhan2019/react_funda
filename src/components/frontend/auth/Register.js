@@ -1,7 +1,41 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import authApi from '../../../api/authApi';
 import Navbar from '../../../layouts/frontend/Navbar';
 import Footer from './Footer';
 const Register = () => {
+  const [registerInput, setRegisterInput] = useState({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+  });
+
+  const handleInput = (e) => {
+    setRegisterInput({
+      ...registerInput,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    //console.log(registerInput);
+    const data = {
+      name: registerInput.name,
+      email: registerInput.email,
+      password: registerInput.password,
+      password_confirmation: registerInput.password_confirmation,
+    };
+    authApi
+      .register(data)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   return (
     <div>
       <Navbar />
@@ -19,35 +53,20 @@ const Register = () => {
                         </h3>
                       </div>
                       <div className="card-body">
-                        <form>
-                          <div className="row mb-3">
-                            <div className="col-md-6">
-                              <div className="form-floating mb-3 mb-md-0">
-                                <input
-                                  className="form-control"
-                                  id="inputFirstName"
-                                  type="text"
-                                  placeholder="Enter your first name"
-                                  name="firstName"
-                                  value=""
-                                />
-                                <label>First name</label>
-                              </div>
-                            </div>
-                            <div className="col-md-6">
-                              <div className="form-floating">
-                                <input
-                                  className="form-control"
-                                  id="inputLastName"
-                                  type="text"
-                                  placeholder="Enter your last name"
-                                  name="lastName"
-                                  value=""
-                                />
-                                <label>Last name</label>
-                              </div>
-                            </div>
+                        <form onSubmit={handleSubmit}>
+                          <div className="form-floating mb-3">
+                            <input
+                              className="form-control"
+                              id="inputLastName"
+                              type="text"
+                              placeholder="Enter your last name"
+                              name="name"
+                              value={registerInput.lastName}
+                              onChange={(e) => handleInput(e)}
+                            />
+                            <label>Last name</label>
                           </div>
+
                           <div className="form-floating mb-3">
                             <input
                               className="form-control"
@@ -55,10 +74,12 @@ const Register = () => {
                               type="email"
                               placeholder="name@example.com"
                               name="email"
-                              value=""
+                              value={registerInput.email}
+                              onChange={(e) => handleInput(e)}
                             />
                             <label>Email address</label>
                           </div>
+
                           <div className="row mb-3">
                             <div className="col-md-6">
                               <div className="form-floating mb-3 mb-md-0">
@@ -68,7 +89,8 @@ const Register = () => {
                                   type="password"
                                   placeholder="Create a password"
                                   name="password"
-                                  value=""
+                                  value={registerInput.password}
+                                  onChange={(e) => handleInput(e)}
                                 />
                                 <label>Password</label>
                               </div>
@@ -77,11 +99,11 @@ const Register = () => {
                               <div className="form-floating mb-3 mb-md-0">
                                 <input
                                   className="form-control"
-                                  id="inputPasswordConfirm"
                                   type="password"
                                   placeholder="Confirm password"
-                                  name="confirm_password"
-                                  value=""
+                                  name="password_confirmation"
+                                  value={registerInput.password}
+                                  onChange={(e) => handleInput(e)}
                                 />
                                 <label>Confirm Password</label>
                               </div>
@@ -101,7 +123,7 @@ const Register = () => {
                       </div>
                       <div className="card-footer text-center py-3">
                         <div className="small">
-                          <Link to="login.html">
+                          <Link to="#">
                             Have an account? Go to login
                           </Link>
                         </div>
