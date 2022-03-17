@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import swal from 'sweetalert';
+
 import authApi from '../../../api/authApi';
+import axiosClient from '../../../api/axiosClient';
 import Navbar from '../../../layouts/frontend/Navbar';
 import Footer from './Footer';
+
 const Register = () => {
+  const history = useNavigate();
+
   const [registerInput, setRegisterInput] = useState({
     name: '',
     email: '',
     password: '',
-    password_confirmation: '',
+    error_list: [],
   });
 
   const handleInput = (e) => {
@@ -25,16 +31,24 @@ const Register = () => {
       name: registerInput.name,
       email: registerInput.email,
       password: registerInput.password,
-      password_confirmation: registerInput.password_confirmation,
     };
-    authApi
-      .register(data)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
+
+    axiosClient.get('/sanctum/csrf-cookie').then((response) => {
+      // Login...
+      authApi.register(data).then((res) => {
+        if (res.data.status === 200) {
+          localStorage.setItem('auth_token', res.data.token);
+          localStorage.setItem('auth_name', res.data.username);
+          swal('Success', res.data.message, 'success');
+          history('/');
+        } else {
+          setRegisterInput({
+            ...registerInput,
+            error_list: res.data.validation_errors,
+          });
+        }
       });
+    });
   };
   return (
     <div>
@@ -56,20 +70,33 @@ const Register = () => {
                         <form onSubmit={handleSubmit}>
                           <div className="form-floating mb-3">
                             <input
-                              className="form-control"
+                              className={
+                                registerInput.error_list.name
+                                  ? 'form-control is-invalid'
+                                  : 'form-control'
+                              }
                               id="inputLastName"
                               type="text"
                               placeholder="Enter your last name"
                               name="name"
-                              value={registerInput.lastName}
+                              value={registerInput.name}
                               onChange={(e) => handleInput(e)}
                             />
-                            <label>Last name</label>
+                            <label>Full name</label>
+                            {registerInput.error_list.name && (
+                              <span className="invalid-feedback">
+                                {registerInput.error_list.name}
+                              </span>
+                            )}
                           </div>
 
                           <div className="form-floating mb-3">
                             <input
-                              className="form-control"
+                              className={
+                                registerInput.error_list.email
+                                  ? 'form-control is-invalid'
+                                  : 'form-control'
+                              }
                               id="inputEmail"
                               type="email"
                               placeholder="name@example.com"
@@ -78,37 +105,34 @@ const Register = () => {
                               onChange={(e) => handleInput(e)}
                             />
                             <label>Email address</label>
+                            {registerInput.error_list.email && (
+                              <span className="invalid-feedback">
+                                {registerInput.error_list.email}
+                              </span>
+                            )}
                           </div>
 
-                          <div className="row mb-3">
-                            <div className="col-md-6">
-                              <div className="form-floating mb-3 mb-md-0">
-                                <input
-                                  className="form-control"
-                                  id="inputPassword"
-                                  type="password"
-                                  placeholder="Create a password"
-                                  name="password"
-                                  value={registerInput.password}
-                                  onChange={(e) => handleInput(e)}
-                                />
-                                <label>Password</label>
-                              </div>
-                            </div>
-                            <div className="col-md-6">
-                              <div className="form-floating mb-3 mb-md-0">
-                                <input
-                                  className="form-control"
-                                  type="password"
-                                  placeholder="Confirm password"
-                                  name="password_confirmation"
-                                  value={registerInput.password}
-                                  onChange={(e) => handleInput(e)}
-                                />
-                                <label>Confirm Password</label>
-                              </div>
-                            </div>
+                          <div className="form-floating mb-3">
+                            <input
+                              className={
+                                registerInput.error_list.password
+                                  ? 'form-control is-invalid'
+                                  : 'form-control'
+                              }
+                              type="password"
+                              placeholder="Create a password"
+                              name="password"
+                              value={registerInput.password}
+                              onChange={(e) => handleInput(e)}
+                            />
+                            <label>Password</label>
+                            {registerInput.error_list.password && (
+                              <span className="invalid-feedback">
+                                {registerInput.error_list.password}
+                              </span>
+                            )}
                           </div>
+
                           <div className="mt-4 mb-0">
                             <div className="d-grid">
                               <button
