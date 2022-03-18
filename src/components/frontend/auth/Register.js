@@ -47,7 +47,7 @@ const Register = () => {
             error_list: res.data.validation_errors,
           });
         }
-      });
+      })
     });
   };
   return (
