@@ -1,7 +1,50 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import swal from 'sweetalert';
+import authApi from '../../../api/authApi';
+import axiosClient from '../../../api/axiosClient';
 import Navbar from '../../../layouts/frontend/Navbar';
 import Footer from './Footer';
 const Login = () => {
+  const navigate = useNavigate();
+
+  const [loginInput, setLoginInput] = useState({
+    email: '',
+    password: '',
+    error_list: [],
+  });
+
+  const handleInput = (e) => {
+    setLoginInput({ ...loginInput, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const data = {
+      email: loginInput.email,
+      password: loginInput.password,
+    };
+
+    axiosClient.get('/sanctum/csrf-cookie').then((response) => {
+      authApi.login(data).then((res) => {
+        if (res.data.status === 200) {
+          localStorage.setItem('auth_token', res.data.token);
+          localStorage.setItem('auth_name', res.data.username);
+          swal('Success', res.data.message, 'success');
+          navigate('/');
+        } else if (res.data.status === 401) {
+          swal('Warning', res.data.message, 'warning');
+        } else {
+          setLoginInput({
+            ...loginInput,
+            error_list: res.data.validation_errors,
+          });
+        }
+      });
+    });
+  };
+
   return (
     <div>
       <Navbar />
@@ -19,28 +62,48 @@ const Login = () => {
                         </h3>
                       </div>
                       <div className="card-body">
-                        <form>
+                        <form onSubmit={handleSubmit}>
                           <div className="form-floating mb-3">
                             <input
-                              className="form-control"
+                              className={
+                                loginInput.error_list.email
+                                  ? 'form-control is-invalid'
+                                  : 'form-control'
+                              }
                               id="inputEmail"
                               type="email"
                               placeholder="name@example.com"
                               name="email"
-                              value=""
+                              value={loginInput.email}
+                              onChange={(e) => handleInput(e)}
                             />
                             <label>Email address</label>
+                            {loginInput.error_list.email && (
+                              <span className="invalid-feedback">
+                                {loginInput.error_list.email}
+                              </span>
+                            )}
                           </div>
                           <div className="form-floating mb-3">
                             <input
-                              className="form-control"
+                              className={
+                                loginInput.error_list.password
+                                  ? 'form-control is-invalid'
+                                  : 'form-control'
+                              }
                               id="inputPassword"
                               type="password"
                               placeholder="Password"
                               name="password"
-                              value=""
+                              value={loginInput.password}
+                              onChange={(e) => handleInput(e)}
                             />
                             <label>Password</label>
+                            {loginInput.error_list.password && (
+                              <span className="invalid-feedback">
+                                {loginInput.error_list.password}
+                              </span>
+                            )}
                           </div>
                           <div className="form-check mb-3">
                             <input

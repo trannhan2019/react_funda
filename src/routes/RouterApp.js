@@ -1,4 +1,9 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from 'react-router-dom';
 import Dashboard from '../components/admin/Dashboard';
 import Profile from '../components/admin/Profile';
 import MasterLayout from '../layouts/admin/MasterLayout';
@@ -10,8 +15,26 @@ const RouterApp = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/login"
+          element={
+            localStorage.getItem('auth_token') ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            localStorage.getItem('auth_token') ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Register />
+            )
+          }
+        />
         <Route path="/admin" element={<MasterLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" index element={<Dashboard />} />
